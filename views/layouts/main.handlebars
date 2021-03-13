@@ -9,7 +9,7 @@
             try {
                 var table = document.getElementById('workout_table');
                 var req = new XMLHttpRequest();
-                var url = 'http://flip1.engr.oregonstate.edu:7238/delete?id=' + current_row.parentNode.parentNode.cells[0].innerHTML;
+                var url = 'http://flip1.engr.oregonstate.edu:22420/delete?id=' + current_row.parentNode.parentNode.cells[0].innerHTML;
                 req.open('GET', url, true);
                 req.addEventListener('load', function(){
                     if(req.status >= 200 && req.status < 400){
@@ -39,7 +39,7 @@
         function bind_submit_button(){
             document.getElementById('workout_submit').addEventListener('click', function(event){
                 var req = new XMLHttpRequest();
-                var url = 'http://flip1.engr.oregonstate.edu:7238/insert?name=';
+                var url = 'http://flip1.engr.oregonstate.edu:22420/insert?name=';
                 if(document.getElementById('name').value != "") {
                     url += document.getElementById('name').value;
                 } else {
