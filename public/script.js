@@ -1,123 +1,120 @@
-document.addEventListener('DOMContentLoaded', bindButtons);
+var workoutForm = document.getElementById("newExercise");
 
-	function bindButtons(){
-	    document.getElementById('submit').addEventListener('click', function(event){
+workoutForm.addEventListener("submit",function(e)
+{
+	e.preventDefault();          //Stops the DOM from updating
 
-	    var req = new XMLHttpRequest();
-			var parms = 'name=';
-			parms += document.getElementById('name').value;
-			parms += '&reps=' + document.getElementById('reps').value; 
-			parms += '&weight=' + document.getElementById('weight').value;
-			parms += '&date=' + document.getElementById('date').value;
+	/* Set up new request */
 
-			var checkBox = document.getElementById('lbs')
-			console.log(checkBox.checked);
-			if(checkBox.checked){
-				parms += "&lbs=1";                                     
-			}
-			else{
-				parms += "&lbs=0";
-			}
-			//parms += '&lbs=' + document.getElementById('lbs').value;
+	var req = new XMLHttpRequest();
+	var queryString = '/insert';
 
-	    
-			//Post newest entry to database	
-	    req.open('POST', 'http://flip3.engr.oregonstate.edu:62619/insert', true);
-	    req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-	    req.addEventListener('load',function(){
-	      if(req.status >= 200 && req.status < 400){
-					// Query database and get newest entry
-					var req2 = new XMLHttpRequest();
-					req2.open("GET", "http://flip3.engr.oregonstate.edu:62619/updatedTable", true);
-					req2.addEventListener('load',function(){
-						if(req2.status >= 200 && req2.status < 400){
+	/* Set up parameters */
 
-						//Get newest record from database
-						var response = req2.responseText;	
-						var response = JSON.parse(req2.responseText);
-						newEntry = response.results[response.results.length-1];
-						newID = response.results[response.results.length-1].id;
-						
-						// Create a new row and add details of newest record
-						var newRow = document.createElement("tr");
-						newRow.id = newID;
-                        
-						var newRowDetailname = document.createElement("td");
-						newRowDetailname.textContent = newEntry.name;
-						newRow.appendChild(newRowDetailname);
+	var parameterString = "eName="+workoutForm.elements.eName.value+
+		"&reps="+workoutForm.elements.reps.value+
+		"&weight="+workoutForm.elements.weight.value+
+		"&date="+workoutForm.elements.date.value+
+		"&lbs="+workoutForm.elements.lbs.value;
 
-						var newRowDetailreps = document.createElement("td");
-						newRowDetailreps.textContent = newEntry.reps;
-						newRow.appendChild(newRowDetailreps);
+	/* Request to server */
 
-						var newRowDetailweight = document.createElement("td");
-						newRowDetailweight.textContent = newEntry.weight;
-						newRow.appendChild(newRowDetailweight);
+	req.open("GET", queryString + "?" + parameterString,true); /* Asynchronous call */
+	req.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
+	req.addEventListener('load',function(){
+		if(req.status >= 200 && req.status < 400){
+			console.log('req sent successfully');
+			var response = JSON.parse(req.responseText);
+			var id = response.workouts;   /* Exercise information */
 
-						var date = new Date(response.results[response.results.length-1].date);
-						var newRowDetaildate = document.createElement("td");
-						newRowDetaildate.textContent = date.getMonth()+1 + "-" + date.getDate() + "-" + date.getFullYear();
-						newRow.appendChild(newRowDetaildate);
+			/* Update exercise information */
+			var tbl = document.getElementById("workoutTable");
+			var newRow = tbl.insertRow(-1);			//Add row at end of table
 
-						var newRowDetaillbs = document.createElement("td");
-						if (response.results[response.results.length-1].lbs === 0){
-							newRowDetaillbs.textContent = "kgs";
-						} else {
-							newRowDetaillbs.textContent = "lbs";
-						}
-            newRow.appendChild(newRowDetaillbs);
-						
-						//Create edit button for new record
-            var newRowDetailEdit = document.createElement("td");
-            var editButton = document.createElement("input");
-            editButton.id = "edit2";
-            editButton.type = "button";
-						editButton.value = "Edit";
-						var connectString = "'/update?id="+ newID + "'"
-						editButton.setAttribute('onclick', "window.location.href=" + connectString);
-            newRowDetailEdit.appendChild(editButton);
-            newRow.appendChild(newRowDetailEdit);
+			/* ID */
+			var idCell = document.createElement('td');
+			idCell.textContent = id;
+			idCell.style.display="none"; /* Don't want to show the id to the users */
+			newRow.appendChild(idCell);
 
-						//Create delete button for new record
-            var newRowDetailDelete = document.createElement("td");
-            var deleteButton = document.createElement("input");
-            deleteButton.id = "delete";
-            deleteButton.type = "button";
-						deleteButton.value = "Delete";
-						deleteButton.setAttribute('onclick',"deleteRow("+newID+")");
+			/* Name */
+			var nameCell = document.createElement('td');
+			nameCell.textContent =workoutForm.elements.eName.value;
+			newRow.appendChild(nameCell);
 
-            newRowDetailDelete.appendChild(deleteButton);
-            newRow.appendChild(newRowDetailDelete);
-								
-						// Append new row with buttons to existing table
-						document.getElementById("table").appendChild(newRow);
-						
-						event.preventDefault();
-						} else {
-							console.log("Error in network request: " + req2.statusText);
-						}});
-					req2.send(null);
-					event.preventDefault();
-	      } else {
-	        console.log("Error in network request: " + req.statusText);
-	      }});
-	    req.send(parms);
-	    event.preventDefault();
-  })
-	};
+			/* Reps */
+			var repCell = document.createElement('td');
+			repCell.textContent = workoutForm.elements.reps.value;
+			newRow.appendChild(repCell);
 
-	// delete function assigned to every delete button
-	function deleteRow(id){
-		var req = new XMLHttpRequest();
-		var parms = 'id=';
-		parms += id;
-		
-		var el = document.getElementById(id);
-	  el.remove(); 
-	
-		req.open("GET", "http://flip3.engr.oregonstate.edu:62619/delete?"+parms, true);
-	  req.send(null);
-	  event.preventDefault();
+			/* Weight */
+			var weightCell = document.createElement('td');
+			weightCell.textContent = workoutForm.elements.weight.value;
+			newRow.appendChild(weightCell);
+
+			/* Pounds or Kilograms */
+
+			var lbsCell = document.createElement('td');
+			lbsCell.textContent = workoutForm.elements.lbs.value;
+			newRow.appendChild(lbsCell);
+
+			/* Date */
+			var dateCell = document.createElement('td');
+			dateCell.textContent =workoutForm.elements.date.value;
+			newRow.appendChild(dateCell);
+
+			/* Edit Button */
+			var editBtnCell = document.createElement('td');
+			editBtnCell.innerHTML = '<a href="/updateWorkout?id='+id+'"><input type="button" value="Edit Exercise"></a>';
+			newRow.appendChild(editBtnCell);
+
+			/* Delete Button */
+			var deleteBtnCell = document.createElement('td');
+			deleteBtnCell.innerHTML = '<input type="button" value="Delete" onclick="deleteExercise(\'workoutTable\', this, '+ id +')">';
+			newRow.appendChild(deleteBtnCell);			//Append cells at the end of the row
+
+		}
+
+		else
+		{
+			console.log('there was an error');
+		}
+	});
+
+	req.send(queryString + "?" + parameterString);
+});
+
+function deleteExercise(tbl,curRow,rowID){
+
+	var table = document.getElementById(tbl);
+	var rowCount = table.rows.length;
+
+	var req = new XMLHttpRequest();
+	var queryString = '/delete';
+
+	//Make GET Delete Request
+	req.open("GET", queryString + "?id=" + rowID,true);
+	req.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
+	req.addEventListener('load',function()
+	{
+		if(req.status >= 200 && req.status < 400)
+		{
+			console.log('del req sent');
+		}
+
+		else
+		{
+			console.log('there was an error');
+		}
+	});
+
+	req.send(queryString + "?id=" + rowID);
+
+	for(var i = 0; i < rowCount; i++){
+		var row = table.rows[i];
+
+		if(row==curRow.parentNode.parentNode){
+			table.deleteRow(i);
+		}
 	}
-	
-	
+}

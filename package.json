@@ -9,11 +9,12 @@
   "author": "Harrison Latimer",
   "license": "ISC",
   "dependencies": {
-    "body-parser": "^1.17.1",
-    "express": "^4.15.2",
-    "express-handlebars": "^2.0.1",
-    "express-session": "^1.15.1",
-    "mysql": "^2.13.0",
-    "forever": "^3.0.4"
+    "body-parser": "^1.13.3",
+    "express": "^4.13.2",
+    "express-handlebars": "^3.0.0",
+    "forever": "^0.15.2",
+    "mysql": "^2.11.1",
+    "request": "^2.74.0",
+    "requires": "^1.0.2",
   }
 }
