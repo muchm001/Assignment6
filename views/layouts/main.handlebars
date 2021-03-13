@@ -1,0 +1,117 @@
+<!doctype html>
+<html>
+<head>
+    <title>Workout Tracker</title>
+
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', bind_submit_button);
+        function delete_row(current_row) {
+            try {
+                var table = document.getElementById('workout_table');
+                var req = new XMLHttpRequest();
+                var url = 'http://flip1.engr.oregonstate.edu:7238/delete?id=' + current_row.parentNode.parentNode.cells[0].innerHTML;
+                req.open('GET', url, true);
+                req.addEventListener('load', function(){
+                    if(req.status >= 200 && req.status < 400){
+                    } else {
+                        console.log("Error in network request: " + req.statusText);
+                    }
+                });
+                req.send(null);
+                event.preventDefault();
+                var row_count = table.rows.length;
+                for (var i = 0; i < row_count; i++) {
+                    var row = table.rows[i];
+                    if (row == current_row.parentNode.parentNode) {
+                        table.deleteRow(i);
+                        row_count--;
+                        i--;
+                    }
+                }
+            } catch (e) {
+                alert(e);
+            }
+        }
+        function edit_row(current_row) {
+            console.log("Hit edit button");
+            location.href = "/edit?id=" + current_row.parentNode.parentNode.cells[0].innerHTML;
+        }
+        function bind_submit_button(){
+            document.getElementById('workout_submit').addEventListener('click', function(event){
+                var req = new XMLHttpRequest();
+                var url = 'http://flip1.engr.oregonstate.edu:7238/insert?name=';
+                if(document.getElementById('name').value != "") {
+                    url += document.getElementById('name').value;
+                } else {
+                    alert("Cannot add to database: NAME EMPTY");
+                    return;
+                }
+                if (document.getElementById('lbs_true').checked) {
+                    url += '&lbs=1';
+                } else if (document.getElementById('lbs_false').checked) {
+                    url += '&lbs=0';
+                }
+                if (document.getElementById('reps_in').value != "") {
+                    url += '&reps=' + document.getElementById('reps_in').value;
+                }
+                if (document.getElementById('weight_in').value != "") {
+                    url += '&weight=' + document.getElementById('weight_in').value;
+                }
+                if (document.getElementById('date_in').value != "") {
+                    url += '&date=' + document.getElementById('date_in').value;
+                }
+                console.log(url);
+                req.open('GET', url, true);
+                req.addEventListener('load', function(){
+                    if(req.status >= 200 && req.status < 400){
+                        var response = JSON.parse(req.responseText);
+                        var table = document.getElementById('workout_table_body');
+                        var row = document.createElement("tr");
+                        for (var item in response) {
+                            if (response.hasOwnProperty(item)) {
+                                var cell = document.createElement("td");
+                                cell.textContent = response[item];
+                                cell.id = item;
+                                if (cell.id == 'id') {
+                                    cell.style.display = "none";
+                                }
+                                row.appendChild(cell);
+                            }
+                        }
+                        delete_cell = document.createElement("td");
+                        delete_cell.id = "delete"
+                        delete_cell.innerHTML = "<input type='button' value='delete' onClick='delete_row(this)'>"
+                        row.appendChild(delete_cell);
+                        edit_cell = document.createElement("td");
+                        edit_cell.id = "edit"
+                        edit_cell.innerHTML = "<input type='button' value='edit' onClick='edit_row(this)'>"
+                        row.appendChild(edit_cell);
+                        table.appendChild(row);
+                    } else {
+                        console.log("Error in network request: " + req.statusText);
+                    }
+                });
+                req.send(null);
+                event.preventDefault();
+            });
+        }
+    </script>
+
+    <style>
+        table  {
+            border-collapse: collapse;
+        }
+        td, th {
+            border: 1px solid black; padding: 3px 8px;
+        }
+        th {
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+
+{{{body}}}
+
+</body>
+</html>
